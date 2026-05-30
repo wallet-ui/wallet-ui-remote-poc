@@ -7,6 +7,7 @@ import {
 } from '@wallet-ui/react'
 import { type ReactNode, useEffect } from 'react'
 
+import { RemoteWalletProvider } from './remote-wallet-provider'
 import { solanaMobileWalletAdapter } from './solana-mobile-wallet-adapter'
 
 const config = createWalletUiConfig({
@@ -29,5 +30,9 @@ export function SolanaProvider({ children }: { children: ReactNode }) {
     solanaMobileWalletAdapter({ clusters: config.clusters })
   }, [])
 
-  return <WalletUi config={config}>{children}</WalletUi>
+  return (
+    <RemoteWalletProvider clusters={config.clusters}>
+      <WalletUi config={config}>{children}</WalletUi>
+    </RemoteWalletProvider>
+  )
 }

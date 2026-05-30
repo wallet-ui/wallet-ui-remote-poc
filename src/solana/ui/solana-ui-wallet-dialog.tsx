@@ -14,13 +14,23 @@ import {
   DropdownMenuTrigger,
 } from '@/core/ui/dropdown-menu'
 import { cn } from '@/core/util/utils'
+import { cancelRemoteWalletPairing } from '@/solana/data-access/remote-wallet-session'
 
+import { RemoteWalletPairingPanel, useRemoteWalletPairingSession } from './remote-wallet-pairing-panel'
 import { formatWalletTriggerLabel, INSTALL_WALLETS_URL, sortWallets } from './wallet-utils'
 
 export function SolanaUiWalletDialog({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const { account, connected, copy, disconnect, wallet, wallets } = useWalletUi()
+  const pairingSession = useRemoteWalletPairingSession()
   const sortedWallets = sortWallets(wallets)
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen)
+
+    if (!nextOpen && pairingSession) {
+      cancelRemoteWalletPairing()
+    }
+  }
   const triggerContent = (
     <>
       {connected && wallet ? <WalletUiIcon className="size-5" wallet={wallet} /> : null}
@@ -55,32 +65,40 @@ export function SolanaUiWalletDialog({ className }: { className?: string }) {
           {triggerContent}
         </Button>
       )}
-      <Dialog onOpenChange={setOpen} open={open}>
-        <DialogContent>
+      <Dialog onOpenChange={handleOpenChange} open={open}>
+        <DialogContent className={pairingSession ? 'sm:max-w-3xl lg:max-w-4xl' : undefined}>
           <DialogHeader>
-            <DialogTitle>Select Wallet</DialogTitle>
-            <DialogDescription>Connect a wallet on Solana to continue.</DialogDescription>
+            <DialogTitle>{pairingSession ? 'Pair Remote Wallet' : 'Select Wallet'}</DialogTitle>
+            <DialogDescription>
+              {pairingSession
+                ? 'Scan the QR code or paste the pairing URL into a remote wallet.'
+                : 'Connect a wallet on Solana to continue.'}
+            </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-2">
-            {sortedWallets.length > 0 ? (
-              sortedWallets.map((availableWallet) => (
-                <WalletDialogWalletItem
-                  key={availableWallet.name}
-                  onConnected={() => setOpen(false)}
-                  wallet={availableWallet}
-                />
-              ))
-            ) : (
-              <Button
-                className="w-full justify-start"
-                nativeButton={false}
-                render={<a href={INSTALL_WALLETS_URL} rel="noreferrer" target="_blank" />}
-                variant="outline"
-              >
-                Install a Solana wallet
-              </Button>
-            )}
-          </div>
+          {pairingSession ? (
+            <RemoteWalletPairingPanel />
+          ) : (
+            <div className="grid gap-2">
+              {sortedWallets.length > 0 ? (
+                sortedWallets.map((availableWallet) => (
+                  <WalletDialogWalletItem
+                    key={availableWallet.name}
+                    onConnected={() => setOpen(false)}
+                    wallet={availableWallet}
+                  />
+                ))
+              ) : (
+                <Button
+                  className="w-full justify-start"
+                  nativeButton={false}
+                  render={<a href={INSTALL_WALLETS_URL} rel="noreferrer" target="_blank" />}
+                  variant="outline"
+                >
+                  Install a Solana wallet
+                </Button>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

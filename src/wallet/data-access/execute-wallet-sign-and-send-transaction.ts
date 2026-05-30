@@ -26,7 +26,7 @@ export async function executeWalletSignAndSendTransaction({
   text: string
   transactionSigner: ReturnType<typeof useWalletUiSigner>
 }) {
-  const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+  const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'processed' }).send()
   const message = pipe(
     createTransactionMessage({ version: 0 }),
     (transactionMessage) => setTransactionMessageFeePayerSigner(transactionSigner, transactionMessage),
@@ -42,7 +42,7 @@ export async function executeWalletSignAndSendTransaction({
     client.rpc.getBalance(transactionSigner.address, { commitment: 'confirmed' }).send(),
     client.rpc
       .getFeeForMessage(getBase64Decoder().decode(encodedMessage) as TransactionMessageBytesBase64, {
-        commitment: 'confirmed',
+        commitment: 'processed',
       })
       .send(),
   ])

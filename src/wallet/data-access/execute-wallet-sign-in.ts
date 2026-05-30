@@ -74,10 +74,6 @@ export async function executeWalletSignIn({
     createSignInPayload({ account, cluster, session, statement }).payload,
   )
 
-  if (signedInAccount.address !== account.address) {
-    throw new Error('Signed-in account does not match the requested account.')
-  }
-
   return signedInAccount
 }
 

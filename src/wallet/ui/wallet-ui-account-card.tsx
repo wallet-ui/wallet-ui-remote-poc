@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react'
 
-import { type UiWallet, WalletUiIcon } from '@wallet-ui/react'
+import { type UiWallet, type UiWalletAccount, WalletUiIcon } from '@wallet-ui/react'
 
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from '@/core/ui/card'
 import { SolanaUiAddress } from '@/solana/ui/solana-ui-address'
 
 export function WalletUiAccountCard({
-  accountAddress,
+  account,
   action,
   wallet,
 }: {
-  accountAddress: string
+  account: UiWalletAccount
   action?: ReactNode
   wallet: UiWallet
 }) {
@@ -19,10 +19,10 @@ export function WalletUiAccountCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <WalletUiIcon className="size-6" wallet={wallet} />
-          <span>{wallet.name}</span>
+          <span>{account.label ?? wallet.name}</span>
         </CardTitle>
         <CardDescription>
-          <SolanaUiAddress address={accountAddress} />
+          <SolanaUiAddress address={account.address} />
         </CardDescription>
         {action ? <CardAction className="space-x-2">{action}</CardAction> : null}
       </CardHeader>
