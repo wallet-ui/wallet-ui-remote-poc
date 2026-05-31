@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/core/ui/dropdown-menu'
 import { cn } from '@/core/util/utils'
-import { cancelRemoteWalletPairing } from '@/solana/data-access/remote-wallet-session'
+import { cancelRemoteWalletPairing } from '@/solana/data-access/remote-wallet-provider'
 
 import { RemoteWalletPairingPanel, useRemoteWalletPairingSession } from './remote-wallet-pairing-panel'
 import { formatWalletTriggerLabel, INSTALL_WALLETS_URL, sortWallets } from './wallet-utils'

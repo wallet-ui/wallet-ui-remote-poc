@@ -7,7 +7,7 @@ import {
 } from '@wallet-ui/react'
 import { type ReactNode, useEffect } from 'react'
 
-import { RemoteWalletProvider } from './remote-wallet-provider'
+import { registerReferenceRemoteWallet } from './remote-wallet-provider'
 import { solanaMobileWalletAdapter } from './solana-mobile-wallet-adapter'
 
 const config = createWalletUiConfig({
@@ -18,21 +18,18 @@ const config = createWalletUiConfig({
   ],
 })
 
-let solanaMobileWalletAdapterLoaded = false
+let walletAdaptersLoaded = false
 
 export function SolanaProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    if (solanaMobileWalletAdapterLoaded) {
+    if (walletAdaptersLoaded) {
       return
     }
 
-    solanaMobileWalletAdapterLoaded = true
+    walletAdaptersLoaded = true
+    registerReferenceRemoteWallet({ clusters: config.clusters })
     solanaMobileWalletAdapter({ clusters: config.clusters })
   }, [])
 
-  return (
-    <RemoteWalletProvider clusters={config.clusters}>
-      <WalletUi config={config}>{children}</WalletUi>
-    </RemoteWalletProvider>
-  )
+  return <WalletUi config={config}>{children}</WalletUi>
 }

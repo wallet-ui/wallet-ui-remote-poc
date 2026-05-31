@@ -1,20 +1,35 @@
+import { useWalletUi } from '@wallet-ui/react'
 import { CheckIcon, CopyIcon, QrCodeIcon, XIcon } from 'lucide-react'
 import QRCode from 'qrcode'
-import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react'
+import { type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { Badge } from '@/core/ui/badge'
 import { Button } from '@/core/ui/button'
 import { Input } from '@/core/ui/input'
+import { Textarea } from '@/core/ui/textarea'
 import { cn } from '@/core/util/utils'
 import {
   cancelRemoteWalletPairing,
   getRemoteWalletPairingSnapshot,
   REMOTE_WALLET_PAIRING_TTL_MS,
   subscribeRemoteWalletPairing,
-} from '@/solana/data-access/remote-wallet-session'
+} from '@/solana/data-access/remote-wallet-provider'
 
 export function RemoteWalletPairingPanel({ className }: { className?: string }) {
+  const { cluster } = useWalletUi()
   const session = useRemoteWalletPairingSession()
+
+  const command = useMemo(() => {
+    if (!session) {
+      return ''
+    }
+
+    return createRemoteWalletCommand({
+      chain: session.chain,
+      pairingUrl: session.pairingUrl,
+      rpcUrl: String(cluster.url),
+    })
+  }, [cluster.url, session])
 
   if (!session) {
     return null
@@ -30,6 +45,9 @@ export function RemoteWalletPairingPanel({ className }: { className?: string }) 
         />
         <div className="grid min-w-0 content-start gap-2">
           <RemoteWalletPairingCountdown expiresAt={session.expiresAt} status={session.status} />
+          <PairingField action={<CopyButton text={command} />} label="Command">
+            <Textarea className="min-h-20 font-mono text-[0.625rem]" readOnly value={command} />
+          </PairingField>
           <PairingField action={<CopyButton text={session.relayDomain} />} label="Relay">
             <Input className="font-mono text-[0.625rem]" readOnly value={session.relayDomain} />
           </PairingField>
@@ -80,6 +98,37 @@ function CopyButton({ text }: { text: string }) {
       {copied ? <CheckIcon /> : <CopyIcon />}
     </Button>
   )
+}
+
+function createRemoteWalletCommand({
+  chain,
+  pairingUrl,
+  rpcUrl,
+}: {
+  chain: string
+  pairingUrl: string
+  rpcUrl: string
+}) {
+  return [
+    'bun',
+    'run',
+    'remote-wallet',
+    '--',
+    '--chain',
+    formatShellArgument(chain),
+    '--rpc-url',
+    formatShellArgument(rpcUrl),
+    '--url',
+    formatShellArgument(pairingUrl),
+  ].join(' ')
+}
+
+function formatShellArgument(value: string) {
+  if (/^[A-Za-z0-9_/:.=+-]+$/.test(value)) {
+    return value
+  }
+
+  return `'${value.replaceAll("'", "'\\''")}'`
 }
 
 function getRemoteWalletStatusLabel(status: string) {
