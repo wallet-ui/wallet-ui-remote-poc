@@ -111,9 +111,8 @@ function createRemoteWalletCommand({
 }) {
   return [
     'bun',
-    'run',
-    'remote-wallet',
-    '--',
+    'x',
+    'remote-wallet@canary',
     '--chain',
     formatShellArgument(chain),
     '--rpc-url',
